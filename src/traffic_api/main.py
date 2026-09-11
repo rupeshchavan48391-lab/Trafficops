@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from src.traffic_api.models import TrafficEvent
 
 app = FastAPI(
     title="TrafficOps API",
@@ -20,4 +21,12 @@ def health_check():
     return {
         "status": "healthy",
         "service": "traffic-api",
+    }
+
+
+@app.post("/events")
+def create_event(event: TrafficEvent):
+    return {
+        "message": "Traffic event received successfully.",
+        "received_event": event,
     }
