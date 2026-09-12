@@ -1,5 +1,8 @@
 from fastapi import FastAPI
+
+from src.traffic_api.database import get_connection
 from src.traffic_api.models import TrafficEvent
+
 
 app = FastAPI(
     title="TrafficOps API",
@@ -26,7 +29,35 @@ def health_check():
 
 @app.post("/events")
 def create_event(event: TrafficEvent):
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO traffic_events (
+                    sensor_id,
+                    road_id,
+                    vehicle_count,
+                    average_speed,
+                    congestion_level,
+                    timestamp
+                )
+                VALUES (%s, %s, %s, %s, %s, %s)
+                RETURNING id, sensor_id, road_id, vehicle_count,
+                          average_speed, congestion_level, timestamp
+                """,
+                (
+                    event.sensor_id,
+                    event.road_id,
+                    event.vehicle_count,
+                    event.average_speed,
+                    event.congestion_level,
+                    event.timestamp,
+                ),
+            )
+
+            row = cur.fetchone()
+
     return {
-        "message": "Traffic event received successfully.",
-        "received_event": event,
+        "message": "Traffic event stored successfully.",
+        "event": row,
     }
