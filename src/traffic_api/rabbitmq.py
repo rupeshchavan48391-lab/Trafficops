@@ -1,13 +1,18 @@
 import json
+import os
 
 import pika
+from dotenv import load_dotenv
 
 
-RABBITMQ_HOST = "127.0.0.1"
-RABBITMQ_PORT = 5672
-RABBITMQ_USER = "trafficops"
-RABBITMQ_PASSWORD = "trafficops"
-QUEUE_NAME = "traffic_events"
+load_dotenv()
+
+
+RABBITMQ_HOST = os.getenv("RABBITMQ_HOST")
+RABBITMQ_PORT = int(os.getenv("RABBITMQ_PORT"))
+RABBITMQ_USER = os.getenv("RABBITMQ_USER")
+RABBITMQ_PASSWORD = os.getenv("RABBITMQ_PASSWORD")
+QUEUE_NAME = os.getenv("RABBITMQ_QUEUE")
 
 
 def publish_event(event):
