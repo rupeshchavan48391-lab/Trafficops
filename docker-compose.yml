@@ -1,0 +1,80 @@
+services:
+
+  postgres:
+    image: postgres:18
+    container_name: trafficops-postgres
+    environment:
+      POSTGRES_DB: trafficops
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    volumes:
+      - postgres_data:/var/lib/postgresql
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+  rabbitmq:
+    image: rabbitmq:4-management
+    container_name: trafficops-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: trafficops
+      RABBITMQ_DEFAULT_PASS: trafficops
+    ports:
+      - "127.0.0.1:15672:15672"
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: trafficops-api
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: trafficops
+      DB_USER: admin
+      DB_PASSWORD: admin
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: trafficops
+      RABBITMQ_PASSWORD: trafficops
+      RABBITMQ_QUEUE: traffic_events
+    ports:
+      - "8000:8000"
+    command: uvicorn src.traffic_api.main:app --host 0.0.0.0 --port 8000
+    depends_on:
+      - postgres
+      - rabbitmq
+
+  event-processor:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: trafficops-processor
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: trafficops
+      DB_USER: admin
+      DB_PASSWORD: admin
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: trafficops
+      RABBITMQ_PASSWORD: trafficops
+      RABBITMQ_QUEUE: traffic_events
+    command: python -m src.event_processor.main
+    depends_on:
+      - postgres
+      - rabbitmq
+
+  sensor-simulator:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: trafficops-simulator
+    environment:
+      API_URL: http://api:8000/events
+    command: python src/sensor_simulator/main.py
+    restart: unless-stopped
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:

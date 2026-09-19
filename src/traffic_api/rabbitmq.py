@@ -29,7 +29,7 @@ def publish_event(event):
 
     channel = connection.channel()
 
-    channel.queue_declare(queue=QUEUE_NAME)
+    channel.queue_declare(queue=QUEUE_NAME,durable=True)
 
     channel.basic_publish(
         exchange="",
