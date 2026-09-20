@@ -1,0 +1,103 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trafficops-api
+  namespace: trafficops
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: trafficops-api
+
+  template:
+    metadata:
+      labels:
+        app: trafficops-api
+
+    spec:
+      containers:
+        - name: api
+          image: trafficops:latest
+
+          ports:
+            - containerPort: 8000
+
+          env:
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: trafficops-config
+                  key: DB_HOST
+
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: trafficops-config
+                  key: DB_PORT
+
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: trafficops-config
+                  key: DB_NAME
+
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: trafficops-secret
+                  key: DB_USER
+
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: trafficops-secret
+                  key: DB_PASSWORD
+
+            - name: RABBITMQ_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: trafficops-config
+                  key: RABBITMQ_HOST
+
+            - name: RABBITMQ_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: trafficops-config
+                  key: RABBITMQ_PORT
+
+            - name: RABBITMQ_USER
+              valueFrom:
+                secretKeyRef:
+                  name: trafficops-secret
+                  key: RABBITMQ_USER
+
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: trafficops-secret
+                  key: RABBITMQ_PASSWORD
+
+            - name: RABBITMQ_QUEUE
+              valueFrom:
+                configMapKeyRef:
+                  name: trafficops-config
+                  key: RABBITMQ_QUEUE
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: trafficops-api
+  namespace: trafficops
+
+spec:
+  selector:
+    app: trafficops-api
+
+  ports:
+    - port: 8000
+      targetPort: 8000
+
+  type: ClusterIP

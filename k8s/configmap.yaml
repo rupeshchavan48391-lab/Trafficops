@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: trafficops-config
+  namespace: trafficops
+
+data:
+  DB_HOST: postgres
+  DB_PORT: "5432"
+  DB_NAME: trafficops
+  RABBITMQ_HOST: rabbitmq
+  RABBITMQ_PORT: "5672"
+  RABBITMQ_QUEUE: traffic_events

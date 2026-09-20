@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trafficops-sensor-simulator
+  namespace: trafficops
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: trafficops-sensor-simulator
+
+  template:
+    metadata:
+      labels:
+        app: trafficops-sensor-simulator
+
+    spec:
+      containers:
+        - name: sensor-simulator
+          image: trafficops:latest
+
+          env:
+            - name: API_URL
+              value: http://trafficops-api:8000/events
+
+          command:
+            - python
+            - src/sensor_simulator/main.py
+
+          restartPolicy: Always
