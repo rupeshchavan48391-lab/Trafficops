@@ -1,0 +1,4 @@
+ap-south-1       → AWS Mumbai
+t3.small         → EC2 size
+key_name         → your existing EC2 key pair
+/32              → allow SSH from one public IP
