@@ -1,0 +1,77 @@
+pipeline {
+
+    agent any
+
+    environment {
+        IMAGE_NAME = "trafficops"
+        IMAGE_TAG  = "${BUILD_NUMBER}"
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh '''
+                    python3 -m venv venv
+                    ./venv/bin/pip install --upgrade pip
+                    ./venv/bin/pip install -r requirements.txt
+                '''
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                sh '''
+                    ./venv/bin/python -m pytest
+                '''
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh '''
+                    docker build \
+                      -f docker/Dockerfile \
+                      -t ${IMAGE_NAME}:${IMAGE_TAG} .
+                '''
+            }
+        }
+
+        stage('Security Scan') {
+            steps {
+                sh '''
+                    trivy image ${IMAGE_NAME}:${IMAGE_TAG}
+                '''
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                echo "Docker image push will be configured later with AWS ECR credentials."
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo "Deployment will be handled by Argo CD."
+            }
+        }
+    }
+
+    post {
+
+        success {
+            echo "TrafficOps CI pipeline completed successfully."
+        }
+
+        failure {
+            echo "TrafficOps CI pipeline failed. Check the stage logs."
+        }
+    }
+}
