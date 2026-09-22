@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: trafficops-api
+  labels:
+    app: trafficops-api
+
+spec:
+  replicas: {{ .Values.replicaCount.api }}
+
+  selector:
+    matchLabels:
+      app: trafficops-api
+
+  template:
+    metadata:
+      labels:
+        app: trafficops-api
+
+    spec:
+      containers:
+        - name: api
+
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+          ports:
+            - name: http
+              containerPort: 8000
+
+          env:
+            - name: DB_HOST
+              value: {{ .Values.config.dbHost | quote }}
+
+            - name: DB_PORT
+              value: {{ .Values.config.dbPort | quote }}
+
+            - name: DB_NAME
+              value: {{ .Values.config.dbName | quote }}
+
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: trafficops-secret
+                  key: DB_USER
+
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: trafficops-secret
+                  key: DB_PASSWORD
+
+            - name: RABBITMQ_HOST
+              value: {{ .Values.config.rabbitmqHost | quote }}
+
+            - name: RABBITMQ_PORT
+              value: {{ .Values.config.rabbitmqPort | quote }}
+
+            - name: RABBITMQ_USER
+              valueFrom:
+                secretKeyRef:
+                  name: trafficops-secret
+                  key: RABBITMQ_USER
+
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: trafficops-secret
+                  key: RABBITMQ_PASSWORD
+
+            - name: RABBITMQ_QUEUE
+              value: {{ .Values.config.rabbitmqQueue | quote }}
