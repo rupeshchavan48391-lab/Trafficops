@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>TrafficOps | Traffic Network Control Center</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #0b1220;
+            color: #e5e7eb;
+            min-height: 100vh;
+        }
+
+        /* HEADER */
+
+        .header {
+            height: 72px;
+            background: #111827;
+            border-bottom: 1px solid #263244;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            font-size: 30px;
+        }
+
+        .brand h1 {
+            font-size: 22px;
+            letter-spacing: 0.5px;
+        }
+
+        .brand span {
+            display: block;
+            color: #94a3b8;
+            font-size: 12px;
+            margin-top: 3px;
+        }
+
+        .system-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #a7f3d0;
+        }
+
+        .status-dot {
+            width: 9px;
+            height: 9px;
+            background: #22c55e;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #22c55e;
+        }
+
+        /* LAYOUT */
+
+        .layout {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            min-height: calc(100vh - 72px);
+        }
+
+        /* SIDEBAR */
+
+        .sidebar {
+            background: #0f172a;
+            border-right: 1px solid #263244;
+            padding: 22px 14px;
+        }
+
+        .sidebar-title {
+            color: #64748b;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 0 12px;
+            margin-bottom: 10px;
+        }
+
+        .nav-item {
+            padding: 12px;
+            margin-bottom: 4px;
+            border-radius: 7px;
+            color: #cbd5e1;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: #1e293b;
+            color: #60a5fa;
+        }
+
+        /* MAIN */
+
+        .main {
+            padding: 24px;
+            overflow-x: hidden;
+        }
+
+        .page-title {
+            margin-bottom: 20px;
+        }
+
+        .page-title h2 {
+            font-size: 24px;
+            margin-bottom: 6px;
+        }
+
+        .page-title p {
+            color: #94a3b8;
+            font-size: 13px;
+        }
+
+        /* TOP CARDS */
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .summary-card {
+            background: #111827;
+            border: 1px solid #263244;
+            border-radius: 10px;
+            padding: 18px;
+        }
+
+        .summary-card .label {
+            color: #94a3b8;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+
+        .summary-card .value {
+            font-size: 25px;
+            font-weight: bold;
+        }
+
+        .summary-card .small {
+            color: #64748b;
+            font-size: 11px;
+            margin-top: 5px;
+        }
+
+        /* CONTENT GRID */
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1.7fr 1fr;
+            gap: 18px;
+        }
+
+        .panel {
+            background: #111827;
+            border: 1px solid #263244;
+            border-radius: 10px;
+            padding: 18px;
+            margin-bottom: 18px;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .panel-header h3 {
+            font-size: 15px;
+        }
+
+        .panel-header span {
+            color: #64748b;
+            font-size: 11px;
+        }
+
+        /* NETWORK MAP */
+
+        .network-map {
+            position: relative;
+            height: 370px;
+            background: #0b1220;
+            border: 1px solid #263244;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .map-grid {
+            position: absolute;
+            inset: 0;
+
+            background-image:
+                linear-gradient(#172235 1px, transparent 1px),
+                linear-gradient(90deg, #172235 1px, transparent 1px);
+
+            background-size: 35px 35px;
+        }
+
+        .road {
+            position: absolute;
+            height: 4px;
+            background: #475569;
+            transform-origin: left center;
+        }
+
+        .road.r1 {
+            width: 380px;
+            left: 70px;
+            top: 120px;
+            transform: rotate(18deg);
+        }
+
+        .road.r2 {
+            width: 350px;
+            left: 160px;
+            top: 270px;
+            transform: rotate(-20deg);
+        }
+
+        .road.r3 {
+            width: 300px;
+            left: 290px;
+            top: 100px;
+            transform: rotate(82deg);
+        }
+
+        .road.r4 {
+            width: 270px;
+            left: 80px;
+            top: 250px;
+            transform: rotate(-2deg);
+        }
+
+        .road.r5 {
+            width: 250px;
+            left: 360px;
+            top: 290px;
+            transform: rotate(-55deg);
+        }
+
+        .node {
+            position: absolute;
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: #111827;
+            border: 3px solid #22c55e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 10px;
+            font-weight: bold;
+            z-index: 5;
+            box-shadow: 0 0 18px rgba(34, 197, 94, 0.25);
+        }
+
+        .node.slow {
+            border-color: #f59e0b;
+            box-shadow: 0 0 18px rgba(245, 158, 11, 0.25);
+        }
+
+        .node.congested {
+            border-color: #ef4444;
+            box-shadow: 0 0 18px rgba(239, 68, 68, 0.3);
+        }
+
+        .node.pune {
+            left: 45px;
+            top: 75px;
+        }
+
+        .node.lonavala {
+            left: 260px;
+            top: 175px;
+        }
+
+        .node.mumbai {
+            right: 55px;
+            top: 75px;
+        }
+
+        .node.nashik {
+            left: 180px;
+            bottom: 35px;
+        }
+
+        .route-label {
+            position: absolute;
+            background: #0f172a;
+            border: 1px solid #334155;
+            padding: 4px 7px;
+            border-radius: 4px;
+            font-size: 9px;
+            color: #94a3b8;
+            z-index: 6;
+        }
+
+        .route-12 {
+            left: 160px;
+            top: 105px;
+        }
+
+        .route-07 {
+            left: 395px;
+            top: 155px;
+        }
+
+        .route-04 {
+            left: 255px;
+            bottom: 100px;
+        }
+
+        .legend {
+            display: flex;
+            gap: 18px;
+            margin-top: 14px;
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .normal {
+            background: #22c55e;
+        }
+
+        .slow {
+            background: #f59e0b;
+        }
+
+        .congested {
+            background: #ef4444;
+        }
+
+        /* SIMULATION */
+
+        .simulation {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 10px;
+            align-items: end;
+        }
+
+        .field label {
+            display: block;
+            color: #94a3b8;
+            font-size: 11px;
+            margin-bottom: 6px;
+        }
+
+        select {
+            width: 100%;
+            background: #0b1220;
+            color: #e5e7eb;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            padding: 10px;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 16px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        /* BARS */
+
+        .bar-row {
+            margin-bottom: 15px;
+        }
+
+        .bar-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-bottom: 6px;
+            color: #cbd5e1;
+        }
+
+        .bar-bg {
+            height: 8px;
+            background: #1e293b;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: #3b82f6;
+            border-radius: 5px;
+        }
+
+        /* SERVICES */
+
+        .service {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 11px 0;
+            border-bottom: 1px solid #1e293b;
+            font-size: 13px;
+        }
+
+        .service:last-child {
+            border-bottom: none;
+        }
+
+        .service-name {
+            color: #cbd5e1;
+        }
+
+        .online {
+            color: #4ade80;
+            font-size: 11px;
+        }
+
+        /* EVENTS */
+
+        .events-panel {
+            margin-top: 0;
+        }
+
+        .event-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .event-table th {
+            text-align: left;
+            color: #64748b;
+            font-size: 10px;
+            text-transform: uppercase;
+            padding: 10px;
+            border-bottom: 1px solid #263244;
+        }
+
+        .event-table td {
+            padding: 11px 10px;
+            border-bottom: 1px solid #1e293b;
+            font-size: 12px;
+            color: #cbd5e1;
+        }
+
+        .badge {
+            padding: 4px 7px;
+            border-radius: 4px;
+            font-size: 10px;
+        }
+
+        .badge.normal {
+            background: rgba(34, 197, 94, 0.12);
+            color: #4ade80;
+        }
+
+        .badge.slow {
+            background: rgba(245, 158, 11, 0.12);
+            color: #fbbf24;
+        }
+
+        .badge.congested {
+            background: rgba(239, 68, 68, 0.12);
+            color: #f87171;
+        }
+
+        /* RESPONSIVE */
+
+        @media (max-width: 1100px) {
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 750px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .main {
+                padding: 15px;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .simulation {
+                grid-template-columns: 1fr;
+            }
+
+            .network-map {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="header">
+
+    <div class="brand">
+        <div class="brand-icon">🚦</div>
+
+        <div>
+            <h1>TrafficOps</h1>
+            <span>Traffic Network Control Center</span>
+        </div>
+    </div>
+
+    <div class="system-status">
+        <div class="status-dot"></div>
+        Network Operational
+    </div>
+
+</header>
+
+
+<div class="layout">
+
+    <!-- SIDEBAR -->
+
+    <aside class="sidebar">
+
+        <div class="sidebar-title">
+            Network
+        </div>
+
+        <div class="nav-item active">
+            🗺️ Network Overview
+        </div>
+
+        <div class="nav-item">
+            📍 Pune
+        </div>
+
+        <div class="nav-item">
+            📍 Mumbai
+        </div>
+
+        <div class="nav-item">
+            📍 Nashik
+        </div>
+
+        <div class="nav-item">
+            📍 Lonavala
+        </div>
+
+
+        <div class="sidebar-title" style="margin-top:25px;">
+            Operations
+        </div>
+
+        <div class="nav-item">
+            🛣️ Route Analysis
+        </div>
+
+        <div class="nav-item">
+            🚗 Traffic Flow
+        </div>
+
+        <div class="nav-item">
+            ⚠️ Event Explorer
+        </div>
+
+    </aside>
+
+
+    <!-- MAIN -->
+
+    <main class="main">
+
+        <div class="page-title">
+
+            <h2>Traffic Network Overview</h2>
+
+            <p>
+                Real-time traffic flow, route utilization and network events
+            </p>
+
+        </div>
+
+
+        <!-- SUMMARY -->
+
+        <section class="summary-grid">
+
+            <div class="summary-card">
+
+                <div class="label">
+                    EVENTS PROCESSED
+                </div>
+
+                <div class="value">
+                    1,248
+                </div>
+
+                <div class="small">
+                    Current session
+                </div>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <div class="label">
+                    ACTIVE ROUTES
+                </div>
+
+                <div class="value">
+                    12
+                </div>
+
+                <div class="small">
+                    Across network
+                </div>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <div class="label">
+                    VEHICLES TRACKED
+                </div>
+
+                <div class="value">
+                    3,842
+                </div>
+
+                <div class="small">
+                    Latest sensor window
+                </div>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <div class="label">
+                    NETWORK STATUS
+                </div>
+
+                <div class="value" style="color:#4ade80;">
+                    NORMAL
+                </div>
+
+                <div class="small">
+                    No critical outage
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <div class="content-grid">
+
+
+            <!-- LEFT COLUMN -->
+
+            <div>
+
+
+                <!-- NETWORK MAP -->
+
+                <section class="panel">
+
+                    <div class="panel-header">
+
+                        <h3>
+                            🗺️ Traffic Network
+                        </h3>
+
+                        <span>
+                            Live simulation
+                        </span>
+
+                    </div>
+
+
+                    <div class="network-map">
+
+                        <div class="map-grid"></div>
+
+
+                        <div class="road r1"></div>
+                        <div class="road r2"></div>
+                        <div class="road r3"></div>
+                        <div class="road r4"></div>
+                        <div class="road r5"></div>
+
+
+                        <div class="route-label route-12">
+                            R-12
+                        </div>
+
+                        <div class="route-label route-07">
+                            R-07
+                        </div>
+
+                        <div class="route-label route-04">
+                            R-04
+                        </div>
+
+
+                        <div class="node pune">
+                            PUNE
+                        </div>
+
+                        <div class="node lonavala slow">
+                            LONAVALA
+                        </div>
+
+                        <div class="node mumbai congested">
+                            MUMBAI
+                        </div>
+
+                        <div class="node nashik">
+                            NASHIK
+                        </div>
+
+                    </div>
+
+
+                    <div class="legend">
+
+                        <div class="legend-item">
+                            <div class="legend-dot normal"></div>
+                            Normal
+                        </div>
+
+                        <div class="legend-item">
+                            <div class="legend-dot slow"></div>
+                            Slow
+                        </div>
+
+                        <div class="legend-item">
+                            <div class="legend-dot congested"></div>
+                            Congested
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- SIMULATION -->
+
+                <section class="panel">
+
+                    <div class="panel-header">
+
+                        <h3>
+                            🚗 Traffic Simulation
+                        </h3>
+
+                        <span>
+                            Sensor simulator
+                        </span>
+
+                    </div>
+
+
+                    <div class="simulation">
+
+                        <div class="field">
+
+                            <label>
+                                LOCATION
+                            </label>
+
+                            <select id="location">
+
+                                <option>Pune</option>
+                                <option>Mumbai</option>
+                                <option>Nashik</option>
+                                <option>Lonavala</option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="field">
+
+                            <label>
+                                ROUTE
+                            </label>
+
+                            <select id="route">
+
+                                <option>R-12</option>
+                                <option>R-07</option>
+                                <option>R-04</option>
+                                <option>R-21</option>
+
+                            </select>
+
+                        </div>
+
+
+                        <button onclick="simulateEvent()">
+                            Simulate Event
+                        </button>
+
+                    </div>
+
+                </section>
+
+
+                <!-- EVENTS -->
+
+                <section class="panel events-panel">
+
+                    <div class="panel-header">
+
+                        <h3>
+                            ⚠️ Event Explorer
+                        </h3>
+
+                        <span>
+                            Latest traffic events
+                        </span>
+
+                    </div>
+
+
+                    <table class="event-table">
+
+                        <thead>
+
+                            <tr>
+                                <th>Time</th>
+                                <th>Location</th>
+                                <th>Route</th>
+                                <th>Vehicles</th>
+                                <th>Classification</th>
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody id="eventTable">
+
+                            <tr>
+                                <td>10:24:12</td>
+                                <td>Pune</td>
+                                <td>R-12</td>
+                                <td>428</td>
+                                <td>
+                                    <span class="badge normal">
+                                        Normal
+                                    </span>
+                                </td>
+                            </tr>
+
+
+                            <tr>
+                                <td>10:23:51</td>
+                                <td>Lonavala</td>
+                                <td>R-07</td>
+                                <td>671</td>
+                                <td>
+                                    <span class="badge slow">
+                                        Slow
+                                    </span>
+                                </td>
+                            </tr>
+
+
+                            <tr>
+                                <td>10:22:34</td>
+                                <td>Mumbai</td>
+                                <td>R-07</td>
+                                <td>1,204</td>
+                                <td>
+                                    <span class="badge congested">
+                                        Congested
+                                    </span>
+                                </td>
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </section>
+
+
+            </div>
+
+
+            <!-- RIGHT COLUMN -->
+
+            <div>
+
+
+                <!-- ROUTE UTILIZATION -->
+
+                <section class="panel">
+
+                    <div class="panel-header">
+
+                        <h3>
+                            🛣️ Route Utilization
+                        </h3>
+
+                        <span>
+                            Current load
+                        </span>
+
+                    </div>
+
+
+                    <div class="bar-row">
+
+                        <div class="bar-label">
+                            <span>R-12 Pune → Mumbai</span>
+                            <span>72%</span>
+                        </div>
+
+                        <div class="bar-bg">
+                            <div
+                                class="bar-fill"
+                                style="width:72%;">
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                    <div class="bar-row">
+
+                        <div class="bar-label">
+                            <span>R-07 Mumbai → Nashik</span>
+                            <span>88%</span>
+                        </div>
+
+                        <div class="bar-bg">
+                            <div
+                                class="bar-fill"
+                                style="width:88%;">
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                    <div class="bar-row">
+
+                        <div class="bar-label">
+                            <span>R-04 Pune → Nashik</span>
+                            <span>51%</span>
+                        </div>
+
+                        <div class="bar-bg">
+                            <div
+                                class="bar-fill"
+                                style="width:51%;">
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                    <div class="bar-row">
+
+                        <div class="bar-label">
+                            <span>R-21 Lonavala → Pune</span>
+                            <span>64%</span>
+                        </div>
+
+                        <div class="bar-bg">
+                            <div
+                                class="bar-fill"
+                                style="width:64%;">
+                            </div>
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- TRAFFIC DISTRIBUTION -->
+
+                <section class="panel">
+
+                    <div class="panel-header">
+
+                        <h3>
+                            🚦 Traffic Distribution
+                        </h3>
+
+                        <span>
+                            Network-wide
+                        </span>
+
+                    </div>
+
+
+                    <div class="bar-row">
+
+                        <div class="bar-label">
+                            <span>Normal</span>
+                            <span>58%</span>
+                        </div>
+
+                        <div class="bar-bg">
+                            <div
+                                class="bar-fill"
+                                style="width:58%;">
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                    <div class="bar-row">
+
+                        <div class="bar-label">
+                            <span>Slow</span>
+                            <span>27%</span>
+                        </div>
+
+                        <div class="bar-bg">
+                            <div
+                                class="bar-fill"
+                                style="width:27%;">
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                    <div class="bar-row">
+
+                        <div class="bar-label">
+                            <span>Congested</span>
+                            <span>15%</span>
+                        </div>
+
+                        <div class="bar-bg">
+                            <div
+                                class="bar-fill"
+                                style="width:15%;">
+                            </div>
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- PLATFORM SERVICES -->
+
+                <section class="panel">
+
+                    <div class="panel-header">
+
+                        <h3>
+                            ⚙️ Platform Services
+                        </h3>
+
+                        <span>
+                            Infrastructure
+                        </span>
+
+                    </div>
+
+
+                    <div class="service">
+
+                        <span class="service-name">
+                            FastAPI
+                        </span>
+
+                        <span class="online">
+                            ● ONLINE
+                        </span>
+
+                    </div>
+
+
+                    <div class="service">
+
+                        <span class="service-name">
+                            RabbitMQ
+                        </span>
+
+                        <span class="online">
+                            ● ONLINE
+                        </span>
+
+                    </div>
+
+
+                    <div class="service">
+
+                        <span class="service-name">
+                            Event Processor
+                        </span>
+
+                        <span class="online">
+                            ● ONLINE
+                        </span>
+
+                    </div>
+
+
+                    <div class="service">
+
+                        <span class="service-name">
+                            PostgreSQL
+                        </span>
+
+                        <span class="online">
+                            ● ONLINE
+                        </span>
+
+                    </div>
+
+
+                    <div class="service">
+
+                        <span class="service-name">
+                            Sensor Simulator
+                        </span>
+
+                        <span class="online">
+                            ● RUNNING
+                        </span>
+
+                    </div>
+
+                </section>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+
+<script>
+
+async function simulateEvent() {
+
+    const location =
+        document.getElementById("location").value;
+
+    const route =
+        document.getElementById("route").value;
+
+
+    const event = {
+
+        location: location,
+
+        route: route,
+
+        vehicle_count:
+            Math.floor(Math.random() * 1000) + 100
+
+    };
+
+
+    try {
+
+        const response =
+            await fetch("/events", {
+
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify(event)
+
+            });
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Failed to publish event"
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        addEventToTable(event);
+
+
+        alert(
+            "Traffic event published successfully!"
+        );
+
+
+        console.log(data);
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Failed to publish traffic event."
+        );
+
+    }
+
+}
+
+
+function addEventToTable(event) {
+
+    const table =
+        document.getElementById("eventTable");
+
+
+    const row =
+        document.createElement("tr");
+
+
+    const time =
+        new Date().toLocaleTimeString();
+
+
+    let classification =
+        "Normal";
+
+
+    if (event.vehicle_count > 700) {
+
+        classification =
+            "Congested";
+
+    }
+
+    else if (event.vehicle_count > 400) {
+
+        classification =
+            "Slow";
+
+    }
+
+
+    let badgeClass =
+        classification.toLowerCase();
+
+
+    row.innerHTML = `
+
+        <td>${time}</td>
+
+        <td>${event.location}</td>
+
+        <td>${event.route}</td>
+
+        <td>${event.vehicle_count}</td>
+
+        <td>
+            <span class="badge ${badgeClass}">
+                ${classification}
+            </span>
+        </td>
+
+    `;
+
+
+    table.prepend(row);
+
+}
+
+</script>
+
+</body>
+</html>

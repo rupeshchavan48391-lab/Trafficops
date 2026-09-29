@@ -1,4 +1,7 @@
+from pathlib import Path
+
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
 
 from src.traffic_api.models import TrafficEvent
 from src.traffic_api.rabbitmq import publish_event
@@ -9,6 +12,10 @@ app = FastAPI(
     description="Cloud-Native Smart Traffic Management & Incident Response Platform",
     version="1.0.0",
 )
+
+
+BASE_DIR = Path(__file__).resolve().parent
+DASHBOARD_FILE = BASE_DIR / "static" / "index.html"
 
 
 @app.get("/")
@@ -25,6 +32,11 @@ def health_check():
         "status": "healthy",
         "service": "traffic-api",
     }
+
+
+@app.get("/dashboard")
+def dashboard():
+    return FileResponse(DASHBOARD_FILE)
 
 
 @app.post("/events")
